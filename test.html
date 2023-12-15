@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bombe</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+            background-color: black;
+            background-image: linear-gradient(to right, #008080, #004040);
+            box-shadow: 0 0 10px rgba(0, 128, 128, 0.5);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            /* Empêche le défilement */
+        }
+        .highlight-text {
+            color: red;
+            font-size: 1.2em; /* Modifiez la taille de police selon vos préférences */
+            font-weight: bold;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            padding: 15px;
+            /* Pas besoin de séparation entre les boxes */
+            height: 100vh;
+        }
+
+        .grid-item {
+            box-sizing: border-box;
+            /* Inclure la taille de la bordure et du rembourrage dans la taille totale */
+            border: 1px solid black;
+            text-align: center;
+            height: 100%;
+            overflow: hidden;
+            /* Empêche le débordement des images */
+            border: 2px solid black;
+        }
+
+        .green-text {
+            color: green;
+        }
+
+        #timer,
+        #text,
+        #code,
+        #entered-code {
+            background-color: black;
+            width: 100%;
+            height: 100%;
+            font-size: 500%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            color: red;
+        }
+
+        #entered-code-container {
+            background-color: black;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            background-color: gray;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: fit;
+            /* Stretch l'image pour couvrir complètement le conteneur */
+        }
+            .modal {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <div class="grid-item">
+            <div class="image-container">
+                <img src="death.svg" alt="Death">
+            </div>
+            <audio id="backgroundSound" loop>
+                <!-- Fichier audio Countdown-timer-bomb.mp3 -->
+                <source src="Countdown-timer-bomb.mp3" type="audio/mp3">
+            </audio>
+        </div>
+        <div class="grid-item green-text">
+            <div id="timer"></div>
+        </div>
+        <div class="grid-item">
+            <div class="image-container">
+                <img src="game.gif" alt="Game">
+            </div>
+        </div>
+        <div class="grid-item green-text">
+            <div id="text">Bombe enclenchée</div>
+        </div>
+        <div class="grid-item green-text">
+            <div id="entered-code-container">
+                <div id="code">Entrez le code</div>
+                <div id="entered-code">_ _ _ _</div>
+            </div>
+        </div>
+        <div class="grid-item">
+            <div class="image-container">
+                <img src="biohazard.jpg" alt="bio">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour le code correct -->
+    <div class="modal fade" id="correctModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Alerte critique</h5>
+                </div>
+                <div class="modal-body">
+                    <p>L'ordinateur a été désactivé par une personne non-habilitée, <span class="highlight-text">BOMBE AMORCÉE.</span> </p>
+
+                    <p>Temps restant avant explosion : 15 minutes. La désactivation de l'ordinateur a déclenché une
+                        séquence accélérée. Les
+                        options de désamorçage sont extrêmement limitées.</p>
+
+                    <p>Les experts en déminage sont en route mais ils leur faut environ 50 minutes pour être sur place.
+                        La situation est
+                        hautement volatile. Vous pouvez tenter de désamorcer la bombe, agissez avec une extrême prudence
+                        car la vie de nombreux
+                        civils et la sécurité de la région reposent maintenant sur vos épaules. Chaque seconde compte."
+                    </p>
+
+                    <p>Si vous acceptez cette mission validez avec la touche ⏎ </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Mission acceptée</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="secondModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Erreur système irrécupérable</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body d-flex flex-column align-items-center">
+                    <!-- Ajoutez ici le contenu du deuxième modal (titre, code, plaque, etc.) -->
+                    <h1 class="mt-4 mb-4">Code coffre : 2023E</h1>
+                    <!-- Ajoutez le code et la plaque ici -->
+                    <img src="plaque_immatriculation.png" alt="Plaque" class="mt-4">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal pour le code incorrect -->
+    <div class="modal fade" id="incorrectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Code Incorrect</h5>
+                </div>
+                <div class="modal-body">
+                    Votre code est incorrect. Veuillez réessayer.
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let enteredCode = "";
+    let countdownInterval;
+    let timerElement;
+    let codeEntered = false;
+    let backgroundSound = document.getElementById('backgroundSound');
+
+    function adjustBackgroundSoundDuration(seconds, soundType) {
+        let soundSrc;
+
+        if (soundType === 'fcountdown') {
+            soundSrc = "final-cnt-down.mp3";
+        } else if (soundType === 'missionImpossible') {
+            soundSrc = "Mission-Impossible.mp3";
+        } else {
+            soundSrc = "Countdown-timer-bomb.mp3";
+        }
+
+        backgroundSound.src = soundSrc;
+        backgroundSound.currentTime = 0;
+        backgroundSound.play();
+
+        if (soundType !== 'missionImpossible') {
+            setTimeout(() => {
+                stopBackgroundSound();
+            }, seconds * 1000);
+        }
+    }
+
+    function countdown() {
+        timerElement = document.getElementById("timer");
+        var heures = 0;
+        var minutes = 5;
+        var secondes = 2;
+
+        var count = heures * 3600 + minutes * 60 + secondes;
+
+        countdownInterval = setInterval(function () {
+            var hours = Math.floor(count / 3600);
+            var minutes = Math.floor((count % 3600) / 60);
+            var seconds = count % 60;
+
+            var formattedTime = hours.toString().padStart(2, '0') + ' : ' + minutes.toString().padStart(2, '0') + ' : ' + seconds.toString().padStart(2, '0');
+            timerElement.textContent = formattedTime;
+            count--;
+
+            if (count < 0) {
+                clearInterval(countdownInterval);
+                timerElement.textContent = "Explosion!";
+            } else if (codeEntered) {
+                clearInterval(countdownInterval);
+                adjustBackgroundSoundDuration(count, 'missionImpossible');
+            }else if (count < 300) {
+                adjustBackgroundSoundDuration(count, 'fcountdown');     
+            } else {
+                adjustBackgroundSoundDuration(count, 'countdown');
+            }
+        }, 1000);
+    }
+
+    function stopBackgroundSound() {
+        backgroundSound.pause();
+        backgroundSound.currentTime = 0;
+    }
+
+    function validateCode() {
+        console.log("Entered code:", enteredCode);
+        const codeElement = document.getElementById('code');
+        const enteredCodeElement = document.getElementById('entered-code');
+        const bombStatusElement = document.getElementById('text');
+
+        if (enteredCode === "9053") {
+            $('#correctModal').modal('show');
+            codeElement.textContent = "Code correct!";
+            enteredCodeElement.textContent = "";
+            codeEntered = true;
+            bombStatusElement.textContent = "Bombe désamorcée!";
+            codeElement.classList.add('green-text');
+            enteredCodeElement.classList.add('green-text');
+            bombStatusElement.classList.add('green-text');
+
+            // Ne pas arrêter la musique ici pour la Mission Impossible
+            adjustBackgroundSoundDuration(0, 'missionImpossible');
+        } else {
+            $('#incorrectModal').modal('show');
+            codeElement.textContent = "Code incorrect...";
+            enteredCode = "";
+            codeEntered = false;
+            bombStatusElement.textContent = "Bombe enclenchée";
+            codeElement.classList.remove('green-text');
+            enteredCodeElement.classList.remove('green-text');
+            bombStatusElement.classList.remove('green-text');
+        }
+
+        updateEnteredCode();
+
+        setTimeout(() => {
+            $('#incorrectModal').modal('hide');
+        }, 1500);
+    }
+
+    function updateEnteredCode() {
+        const enteredCodeElement = document.getElementById('entered-code');
+        const formattedCode = enteredCode.split('').join(' ');
+        enteredCodeElement.innerHTML = formattedCode
+            .split('')
+            .map((digit) => `<span style="color: red;">${digit}</span>`)
+            .join(' ');
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (!codeEntered && event.key >= "0" && event.key <= "9" && enteredCode.length < 4) {
+            enteredCode += event.key;
+            updateEnteredCode();
+        } else if (event.key === "Enter") {
+            validateCode();
+        } else if (event.key === "Enter" && $('#secondModal').is(':visible')) {
+                // Fermer le modal seulement si le deuxième modal est visible
+                $('#secondModal').modal('hide');
+            }
+        });
+
+    $(document).ready(function () {
+            $('#correctModal').on('hidden.bs.modal', function (e) {
+                $('#secondModal').modal('show');
+            });
+
+            $('#secondModal').on('hidden.bs.modal', function (e) {
+                // Si le deuxième modal est fermé, arrêter la musique seulement si le code n'est pas encore entré
+                if (!codeEntered) {
+                    stopBackgroundSound();
+                }
+            });
+        });
+
+    $(document).on('keyup', function (e) {
+        if (e.key === 'Enter') {
+            $('.modal').modal('hide'); // Fermez le premier modal
+        }
+    });
+
+
+
+
+
+    countdown();
+</script>
+</body>
+
+</html>
