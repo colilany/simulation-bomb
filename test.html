@@ -118,6 +118,7 @@
 </head>
 
 <body>
+    <!-- Grille 3x3 -->
     <div class="grid-container">
         <div class="grid-item">
             <div class="image-container">
@@ -183,6 +184,7 @@
         </div>
     </div>
 
+    <!-- Modal pour le info code et plaque -->
     <div class="modal fade" id="secondModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -222,13 +224,16 @@
         </div>
     </div>
 
+<!-- Fonctions-->
 <script>
+    // variables
     let enteredCode = "";
     let countdownInterval;
     let timerElement;
     let codeEntered = false;
     let backgroundSound = document.getElementById('backgroundSound');
 
+    // son de fond
     function adjustBackgroundSoundDuration(seconds, soundType) {
         let soundSrc;
 
@@ -251,14 +256,18 @@
         }
     }
 
+    // compte à rebours
     function countdown() {
+
+        // modification du temps
         timerElement = document.getElementById("timer");
-        var heures = 0;
-        var minutes = 5;
-        var secondes = 2;
+        var heures = 0;                                                 // CHANGER ICI L'HEURE
+        var minutes = 5;                                                // CHANGER ICI LES MINUTES
+        var secondes = 2;                                               // CHANGER ICI LES SECONDES
 
         var count = heures * 3600 + minutes * 60 + secondes;
 
+        // compte à rebours
         countdownInterval = setInterval(function () {
             var hours = Math.floor(count / 3600);
             var minutes = Math.floor((count % 3600) / 60);
@@ -282,11 +291,13 @@
         }, 1000);
     }
 
+    // arrêter le son de fond
     function stopBackgroundSound() {
         backgroundSound.pause();
         backgroundSound.currentTime = 0;
     }
 
+    // validation du code
     function validateCode() {
         console.log("Entered code:", enteredCode);
         const codeElement = document.getElementById('code');
@@ -323,6 +334,7 @@
         }, 1500);
     }
 
+    // afficher le code entré
     function updateEnteredCode() {
         const enteredCodeElement = document.getElementById('entered-code');
         const formattedCode = enteredCode.split('').join(' ');
@@ -332,6 +344,7 @@
             .join(' ');
     }
 
+    // événements
     document.addEventListener("keydown", function (event) {
         if (!codeEntered && event.key >= "0" && event.key <= "9" && enteredCode.length < 4) {
             enteredCode += event.key;
@@ -343,7 +356,6 @@
                 $('#secondModal').modal('hide');
             }
         });
-
     $(document).ready(function () {
             $('#correctModal').on('hidden.bs.modal', function (e) {
                 $('#secondModal').modal('show');
@@ -356,16 +368,11 @@
                 }
             });
         });
-
     $(document).on('keyup', function (e) {
         if (e.key === 'Enter') {
             $('.modal').modal('hide'); // Fermez le premier modal
         }
     });
-
-
-
-
 
     countdown();
 </script>
